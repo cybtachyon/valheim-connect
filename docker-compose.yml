@@ -1,0 +1,34 @@
+---
+
+version: "3"
+
+networks:
+    traefik_network:
+        external:
+            name: homelabos_traefik
+
+services:
+    valheim-connect:
+        image: thecodingmachine/php:8.0-v4-slim-apache
+        volumes:
+            - "./web:/var/www/html"
+        environment:
+            - STATUS_URL=${STATUS_URL}
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=homelabos_traefik"
+            - "traefik.http.services.valheim-connect.loadbalancer.server.scheme=http"
+            - "traefik.http.services.valheim-connect.loadbalancer.server.port=80"
+            - "traefik.http.routers.valheim-connect-http.service=valheim-connect"
+            - "traefik.http.routers.valheim-connect-http.rule=Host(`valheim.sam.derekree.se`)"
+            - "traefik.http.routers.valheim-connect-http.entrpoints=http"
+            - "traefik.http.routers.valheim-connect-http.middlewares=customFrameHomelab@file"
+            - "traefik.http.routers.valheim-connect.service=valheim-connect"
+            - "traefik.http.routers.valheim-connect.rule=Host(`valheim.sam.derekree.se`)"
+            - "traefik.http.routers.valheim-connect.entrpoints=http"
+            - "traefik.http.routers.valheim-connect.middlewares=customFrameHomelab@file"
+            - "traefik.http.routers.valheim-connect.tls=true"
+            - "traefik.http.routers.valheim-connect.tls.certresolver=http"
+        networks:
+            - traefik_network
+        restart: unless-stopped
